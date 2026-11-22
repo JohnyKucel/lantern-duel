@@ -54,8 +54,8 @@ export const CARDS = [
   { id: 'mountain-king', name: 'Mountain King', element: 'stone', kind: 'creature', cost: 4, attack: 5, health: 7, armor: 1, text: 'Armor 1: shrugs off a blow.' },
   { id: 'fireball', name: 'Fireball', element: 'flame', kind: 'spell', cost: 2, attack: 0, health: 0, armor: 0, text: 'Deal 3 damage to the foe.', effect: 'damageFace3' },
   { id: 'healing-rain', name: 'Healing Rain', element: 'leaf', kind: 'spell', cost: 2, attack: 0, health: 0, armor: 0, text: 'Mend 6 life.', effect: 'heal6' },
-  { id: 'tidal-surge', name: 'Tidal Surge', element: 'tide', kind: 'spell', cost: 3, attack: 0, health: 0, armor: 0, text: 'Draw 2 cards. Burn the foe for 1.', effect: 'draw2Damage1' },
-  { id: 'stonewall', name: 'Stonewall', element: 'stone', kind: 'spell', cost: 2, attack: 0, health: 0, armor: 0, text: 'Your creatures gain +1 attack and +1 health.', effect: 'buffAll' },
+  { id: 'tidal-surge', name: 'Tidal Surge', element: 'tide', kind: 'spell', cost: 3, attack: 0, health: 0, armor: 0, text: 'Draw 2. Burn the foe for 1.', effect: 'draw2Damage1' },
+  { id: 'stonewall', name: 'Stonewall', element: 'stone', kind: 'spell', cost: 2, attack: 0, health: 0, armor: 0, text: 'Your creatures gain +1/+1.', effect: 'buffAll' },
 ];
 export const DECK_IDS = [
   'ember-imp', 'cinder-wolf', 'flame-herald', 'pyre-drake',

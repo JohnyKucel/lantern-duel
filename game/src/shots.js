@@ -42,19 +42,22 @@ export function stageShot(name, world) {
     return { screen: SCREEN_OVER, best: 0 };
   }
   if (name === 'play') {
-    world.reset();
-    let rounds = 0;
-    while (rounds < 14) {
-      runTurns(world, 1);
-      rounds += 1;
-      if (world.state.phase === 'over') break;
-      const me = world.state.players[0];
-      const foe = world.state.players[1];
-      if (world.state.turn >= 5 && me.board.length >= 2 && foe.board.length >= 1 && me.hand.length >= 3) break;
-    }
-    if (world.state.phase === 'over') {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
       world.reset();
-      runTurns(world, 2);
+      let rounds = 0;
+      let good = false;
+      while (rounds < 12) {
+        runTurns(world, 1);
+        rounds += 1;
+        if (world.state.phase === 'over') break;
+        const me = world.state.players[0];
+        const foe = world.state.players[1];
+        if (world.state.turn >= 5 && me.board.length >= 2 && foe.board.length >= 1 && me.hand.length >= 3) {
+          good = true;
+          break;
+        }
+      }
+      if (good) return { screen: SCREEN_PLAY, best: 0 };
     }
     return { screen: SCREEN_PLAY, best: 0 };
   }

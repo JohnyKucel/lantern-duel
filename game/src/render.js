@@ -480,10 +480,16 @@ export function createRenderer(canvas) {
     ctx.arc(FIELD.width / 2, 168, 58, 0, Math.PI * 2);
     ctx.fill();
     drawFlame(ctx, FIELD.width / 2, 168, 34, '#e4572e');
-    ctx.strokeStyle = PALETTE.gold;
-    ctx.lineWidth = 3;
-    rr(ctx, FIELD.width / 2 - 52, 96, 104, 144, 12);
-    ctx.stroke();
+    ctx.fillStyle = PALETTE.goldDark;
+    ctx.fillRect(FIELD.width / 2 - 14, 82, 28, 10);
+    ctx.fillRect(FIELD.width / 2 - 3, 74, 6, 8);
+    ctx.fillStyle = PALETTE.gold;
+    ctx.beginPath();
+    ctx.moveTo(FIELD.width / 2 - 10, 246);
+    ctx.lineTo(FIELD.width / 2 + 10, 246);
+    ctx.lineTo(FIELD.width / 2, 260);
+    ctx.closePath();
+    ctx.fill();
     text('EMBER COURT', FIELD.width / 2, 330, 64, PALETTE.gold, 'center', true, true);
     text('A duel of lanterns, elements and nerve', FIELD.width / 2, 368, 22, PALETTE.cream, 'center', false, true);
     const lines = [
