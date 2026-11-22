@@ -11,10 +11,11 @@ const outGame = join(outDir, 'game');
 const outShots = join(outDir, 'screenshots');
 
 mkdirSync(outGame, { recursive: true });
+if (!existsSync(gameDir)) throw new Error('game directory is missing');
 cpSync(gameDir, outGame, { recursive: true });
 mkdirSync(outShots, { recursive: true });
 if (existsSync(shotsDir)) {
-  for (const name of readdirSync(shotsDir)) {
+  for (const name of readdirSync(shotsDir).sort()) {
     if (name.startsWith('.')) continue;
     cpSync(join(shotsDir, name), join(outShots, name));
   }
