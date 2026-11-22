@@ -27,7 +27,7 @@ export function boardLayout(count) {
 
 export const END_TURN = { x: 1064, y: 296, w: 188, h: 46 };
 export const START_BUTTON = { x: 510, y: 528, w: 260, h: 58 };
-export const AGAIN_BUTTON = { x: 510, y: 520, w: 260, h: 58 };
+export const AGAIN_BUTTON = { x: 510, y: 390, w: 260, h: 54 };
 
 function rr(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -268,13 +268,13 @@ export function createRenderer(canvas) {
     ctx2.fillRect(x, top + 24, HAND_CARD.w, 10);
     let nameSize = 16;
     font(nameSize, true, false);
-    while (ctx2.measureText(def.name).width > 88 && nameSize > 11) {
+    while (ctx2.measureText(def.name).width > 80 && nameSize > 11) {
       nameSize -= 1;
       font(nameSize, true, false);
     }
     ctx2.fillStyle = '#ffffff';
     ctx2.textAlign = 'center';
-    ctx2.fillText(def.name, x + 83, top + 23);
+    ctx2.fillText(def.name, x + 81, top + 23);
     ctx2.fillStyle = el.color;
     ctx2.beginPath();
     ctx2.arc(x + 20, top + 20, 15, 0, Math.PI * 2);
@@ -408,7 +408,7 @@ export function createRenderer(canvas) {
     ctx2.fillText('Deck ' + p.deck.length + ' cards', x + 8, y + 138);
   }
 
-  function drawPlay(state, ui) {
+  function drawPlay(state, ui, hideChrome) {
     const me = state.players[0];
     const foe = state.players[1];
     drawSidePanel(ctx, foe, 36, 62, false);
@@ -416,8 +416,8 @@ export function createRenderer(canvas) {
     for (let i = 0; i < backs; i += 1) drawCardBack(ctx, 700 + i * 56, 66, 46, 64);
     font(14, false, false);
     ctx.fillStyle = PALETTE.muted;
-    ctx.textAlign = 'left';
-    ctx.fillText('Opponent hand: ' + foe.hand.length + ' cards', 1000, 102);
+    ctx.textAlign = 'right';
+    ctx.fillText('Opponent hand: ' + foe.hand.length + ' cards', FIELD.width - 28, 102);
     if (foe.board.length === 0) {
       font(16, false, false);
       ctx.fillStyle = PALETTE.muted;
@@ -437,7 +437,7 @@ export function createRenderer(canvas) {
     ctx.textAlign = 'left';
     ctx.fillText('Turn ' + state.turn + '  —  ' + state.log, 40, 322);
     const myTurn = state.phase === 'player';
-    drawButton(ctx, END_TURN, myTurn ? 'End Turn' : 'Warden acts…', myTurn);
+    if (!hideChrome) drawButton(ctx, END_TURN, myTurn ? 'End Turn' : 'Warden acts…', myTurn);
     if (me.board.length === 0) {
       font(16, false, false);
       ctx.fillStyle = PALETTE.muted;
@@ -450,11 +450,13 @@ export function createRenderer(canvas) {
       drawBoardCard(ctx, me.board[i], x, BOARD_BOT_Y, true, me.board[i].canAttack && myTurn, ui.selectedAttacker === i);
     }
     drawSidePanel(ctx, me, 36, 520, true);
-    const lay = handLayout(Math.max(me.hand.length, 1));
-    for (let i = 0; i < me.hand.length; i += 1) {
-      const x = lay.x0 + i * (HAND_CARD.w + lay.gap);
-      const hovered = ui.hover && ui.hover.x >= x && ui.hover.x <= x + HAND_CARD.w && ui.hover.y >= HAND_Y - 16 && ui.hover.y <= HAND_Y + HAND_CARD.h;
-      drawHandCard(ctx, me.hand[i], x, HAND_Y, myTurn && me.hand[i] && cardById(me.hand[i].defId).cost <= me.mana, hovered || ui.selectedHand === i);
+    if (!hideChrome) {
+      const lay = handLayout(Math.max(me.hand.length, 1));
+      for (let i = 0; i < me.hand.length; i += 1) {
+        const x = lay.x0 + i * (HAND_CARD.w + lay.gap);
+        const hovered = ui.hover && ui.hover.x >= x && ui.hover.x <= x + HAND_CARD.w && ui.hover.y >= HAND_Y - 16 && ui.hover.y <= HAND_Y + HAND_CARD.h;
+        drawHandCard(ctx, me.hand[i], x, HAND_Y, myTurn && me.hand[i] && cardById(me.hand[i].defId).cost <= me.mana, hovered || ui.selectedHand === i);
+      }
     }
     if (ui.selectedAttacker >= 0) {
       font(15, true, false);
@@ -462,10 +464,52 @@ export function createRenderer(canvas) {
       ctx.textAlign = 'center';
       ctx.fillText('Choose a target: an enemy creature, or the Warden.', FIELD.width / 2, 348);
     }
-    font(13, false, false);
-    ctx.fillStyle = PALETTE.muted;
-    ctx.textAlign = 'right';
-    ctx.fillText('Click a card to play it  •  Click a creature, then a target, to attack  •  P pause  •  M mute', FIELD.width - 28, 706);
+    if (!hideChrome) {
+      font(13, false, false);
+      ctx.fillStyle = PALETTE.muted;
+      ctx.textAlign = 'right';
+      ctx.fillText('Click a card to play it  •  Click a creature, then a target, to attack  •  P pause  •  M mute', FIELD.width - 28, 706);
+    }
+  }
+
+  function drawGlowDot(x, y) {
+    ctx.fillStyle = 'rgba(232,182,76,0.25)';
+    ctx.beginPath();
+    ctx.arc(x, y, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = PALETTE.gold;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawMiniCard(element, x, y) {
+    const el = ELEMENTS[element];
+    const w = 120;
+    const h = 128;
+    const traits = { flame: 'Burns', leaf: 'Mends', tide: 'Draws', stone: 'Endures' };
+    ctx.fillStyle = PALETTE.shadow;
+    rr(ctx, x + 3, y + 4, w, h, 10);
+    ctx.fill();
+    ctx.fillStyle = PALETTE.cream;
+    rr(ctx, x, y, w, h, 10);
+    ctx.fill();
+    ctx.strokeStyle = el.color;
+    ctx.lineWidth = 2;
+    rr(ctx, x, y, w, h, 10);
+    ctx.stroke();
+    ctx.fillStyle = el.color;
+    rr(ctx, x, y, w, 28, 10);
+    ctx.fill();
+    ctx.fillRect(x, y + 18, w, 10);
+    font(14, true, false);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText(el.name, x + w / 2, y + 20);
+    drawGlyph(ctx, element, x + w / 2, y + 68, 22);
+    font(13, false, true);
+    ctx.fillStyle = PALETTE.inkSoft;
+    ctx.fillText(traits[element], x + w / 2, y + 112);
   }
 
   function drawTitle(state, best) {
@@ -499,6 +543,14 @@ export function createRenderer(canvas) {
     ];
     for (let i = 0; i < lines.length; i += 1) text(lines[i], FIELD.width / 2, 412 + i * 28, 18, PALETTE.text, 'center', false, false);
     drawButton(ctx, START_BUTTON, 'Start the Duel', true);
+    drawMiniCard('flame', 140, 290);
+    drawMiniCard('leaf', 140, 440);
+    drawMiniCard('tide', 1020, 290);
+    drawMiniCard('stone', 1020, 440);
+    drawGlowDot(448, 132);
+    drawGlowDot(832, 132);
+    drawGlowDot(448, 592);
+    drawGlowDot(832, 592);
     if (best > 0) text('Best score: ' + best, FIELD.width / 2, 622, 17, PALETTE.muted, 'center', false, false);
     text('Click or press Enter to start  •  P pause  •  M mute  •  R restart', FIELD.width / 2, 652, 14, PALETTE.muted, 'center', false, false);
     void state;
@@ -522,12 +574,23 @@ export function createRenderer(canvas) {
   function drawOver(state, best) {
     const won = state.winner === 'player';
     const title = won ? 'VICTORY' : 'DEFEAT';
+    const box = { x: 340, y: 150, w: 600, h: 360 };
+    ctx.fillStyle = 'rgba(6,24,21,0.82)';
+    ctx.fillRect(0, 0, FIELD.width, FIELD.height);
+    ctx.fillStyle = PALETTE.panel;
+    rr(ctx, box.x, box.y, box.w, box.h, 14);
+    ctx.fill();
+    ctx.strokeStyle = PALETTE.gold;
+    ctx.lineWidth = 3;
+    rr(ctx, box.x, box.y, box.w, box.h, 14);
+    ctx.stroke();
+    text(title, FIELD.width / 2, box.y + 82, 56, won ? PALETTE.gold : '#e4572e', 'center', true, true);
     const lines = won
       ? ['The Ashen Warden bows out. The court is yours.', 'Score ' + state.score + '  •  Life left ' + state.players[0].life + '  •  Turns ' + state.turn, 'Best score ' + Math.max(best, state.score)]
-      : ['The lanterns dim. The Warden keeps the court.', 'Score ' + state.score + '  •  Life left ' + state.players[0].life + '  •  Turns ' + state.turn, 'Best score ' + best];
-    drawPanel(title, lines, 'Press Enter or click Play Again', { x: 340, y: 150, w: 600, h: 330 });
+      : ['The lanterns dim. The Warden keeps the court.', 'Score ' + state.score + '  •  Life left ' + state.players[0].life + '  •  Turns ' + state.turn, 'Best score ' + Math.max(best, state.score)];
+    for (let i = 0; i < lines.length; i += 1) text(lines[i], FIELD.width / 2, box.y + 136 + i * 30, 19, PALETTE.text, 'center', false, false);
     drawButton(ctx, AGAIN_BUTTON, 'Play Again', true);
-    void best;
+    text('Press Enter or click Play Again', FIELD.width / 2, box.y + 330, 17, PALETTE.muted, 'center', false, false);
   }
 
   function drawPaused() {
@@ -541,9 +604,9 @@ export function createRenderer(canvas) {
     ctx.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
     drawTable();
     if (screen === SCREEN_TITLE) drawTitle(state, best);
-    else if (screen === SCREEN_OVER) { drawPlay(state, ui); drawOver(state, best); }
-    else if (screen === SCREEN_PAUSED) { drawPlay(state, ui); drawPaused(); }
-    else drawPlay(state, ui);
+    else if (screen === SCREEN_OVER) { drawPlay(state, ui, true); drawOver(state, best); }
+    else if (screen === SCREEN_PAUSED) { drawPlay(state, ui, false); drawPaused(); }
+    else drawPlay(state, ui, false);
   }
 
   resize();

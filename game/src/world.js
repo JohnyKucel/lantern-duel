@@ -7,6 +7,14 @@ export const PHASE_OVER = 'over';
 
 let nextUid = 1;
 
+function sv(name, first, third) {
+  return name + ' ' + (name === 'You' ? first : third);
+}
+
+function obj(name) {
+  return name === 'You' ? 'you' : name;
+}
+
 function makeCard(defId) {
   return { uid: nextUid, defId };
 }
@@ -32,17 +40,17 @@ export function createWorld(random) {
     if (p.deck.length === 0) {
       p.fatigue += 1;
       p.life -= p.fatigue;
-      state.log = p.name + ' runs out of cards and takes ' + p.fatigue + ' fatigue.';
+      state.log = p.name === 'You' ? 'You run out of cards and take ' + p.fatigue + ' fatigue.' : p.name + ' runs out of cards and takes ' + p.fatigue + ' fatigue.';
       checkWin();
       return;
     }
     const card = p.deck.pop();
     if (p.hand.length >= 7) {
-      state.log = p.name + ' draws ' + cardById(card.defId).name + ' but the hand is full.';
+      state.log = sv(p.name, 'draw', 'draws') + ' ' + cardById(card.defId).name + ' but the hand is full.';
       return;
     }
     p.hand.push(card);
-    state.log = p.name + ' draws a card.';
+    state.log = sv(p.name, 'draw', 'draws') + ' a card.';
   }
 
   function heal(side, amount) {
@@ -54,7 +62,7 @@ export function createWorld(random) {
     const p = state.players[target];
     p.life -= amount;
     state.players[source].damageDealt += amount;
-    state.log = state.players[source].name + ' deals ' + amount + ' to ' + p.name + '.';
+    state.log = sv(state.players[source].name, 'deal', 'deals') + ' ' + amount + ' to ' + obj(p.name) + '.';
     checkWin();
   }
 
@@ -67,7 +75,7 @@ export function createWorld(random) {
         state.winner = i === 0 ? 'ai' : 'player';
         const w = state.players[other(i)];
         state.score = Math.max(50, 500 + w.life * 20 - state.turn * 5);
-        state.log = w.name + ' wins the duel.';
+        state.log = sv(w.name, 'win', 'wins') + ' the duel.';
         return;
       }
     }
@@ -86,20 +94,20 @@ export function createWorld(random) {
     const foe = other(side);
     if (def.onPlay === 'damageFace1') damageFace(foe, 1, side);
     else if (def.onPlay === 'damageFace2') damageFace(foe, 2, side);
-    else if (def.onPlay === 'heal2') { heal(side, 2); state.log = state.players[side].name + ' mends 2 life.'; }
-    else if (def.onPlay === 'heal3') { heal(side, 3); state.log = state.players[side].name + ' mends 3 life.'; }
+    else if (def.onPlay === 'heal2') { heal(side, 2); state.log = sv(state.players[side].name, 'mend', 'mends') + ' 2 life.'; }
+    else if (def.onPlay === 'heal3') { heal(side, 3); state.log = sv(state.players[side].name, 'mend', 'mends') + ' 3 life.'; }
     else if (def.onPlay === 'draw1') drawCard(side);
   }
 
   function applySpell(side, def) {
     const foe = other(side);
     if (def.effect === 'damageFace3') damageFace(foe, 3, side);
-    else if (def.effect === 'heal6') { heal(side, 6); state.log = state.players[side].name + ' mends 6 life.'; }
+    else if (def.effect === 'heal6') { heal(side, 6); state.log = sv(state.players[side].name, 'mend', 'mends') + ' 6 life.'; }
     else if (def.effect === 'draw2Damage1') { drawCard(side); drawCard(side); if (state.phase !== PHASE_OVER) damageFace(foe, 1, side); }
     else if (def.effect === 'buffAll') {
       const p = state.players[side];
       for (let i = 0; i < p.board.length; i += 1) { p.board[i].attack += 1; p.board[i].health += 1; p.board[i].maxHealth += 1; }
-      state.log = state.players[side].name + ' rallies the board.';
+      state.log = sv(state.players[side].name, 'rally', 'rallies') + ' the board.';
     }
   }
 
@@ -117,10 +125,10 @@ export function createWorld(random) {
     p.cardsPlayed += 1;
     if (def.kind === 'creature') {
       p.board.push(makeCreature(card.defId));
-      state.log = p.name + ' summons ' + def.name + '.';
+      state.log = sv(p.name, 'summon', 'summons') + ' ' + def.name + '.';
       applyOnPlay(side, def);
     } else {
-      state.log = p.name + ' casts ' + def.name + '.';
+      state.log = sv(p.name, 'cast', 'casts') + ' ' + def.name + '.';
       applySpell(side, def);
     }
     checkWin();

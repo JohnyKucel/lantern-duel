@@ -157,7 +157,7 @@ function runGame() {
       if (p.x >= x && p.x <= x + 128 && p.y >= 500 && p.y <= 684) {
         const name = world.playCard(0, i);
         if (name) {
-          if (world.state.log.indexOf('mends') >= 0) audio.heal();
+          if (world.state.log.indexOf('mend') >= 0) audio.heal();
           else audio.play();
           announce(world.state.log);
         }
@@ -212,8 +212,8 @@ function runGame() {
           lastLog = step.message;
           announce(step.message);
           if (step.message.indexOf('strikes') >= 0 || step.message.indexOf('trades') >= 0) audio.hit();
-          else if (step.message.indexOf('mends') >= 0) audio.heal();
-          else if (step.message.indexOf('summons') >= 0 || step.message.indexOf('casts') >= 0) audio.play();
+          else if (step.message.indexOf('mend') >= 0) audio.heal();
+          else if (step.message.indexOf('summon') >= 0 || step.message.indexOf('cast') >= 0) audio.play();
         }
         if (step.done) {
           world.endTurn();
